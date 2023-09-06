@@ -65,7 +65,7 @@ def signup():
     If the there already is a user with that username: flash message
     and re-present form.
     """
-    if CURR_USER_KEY in session:
+    if g.user:
         return redirect(f'/users/{session[CURR_USER_KEY]}')
 
     do_logout() #TODO: think about this functionality,
@@ -99,7 +99,7 @@ def signup():
 def login():
     """Handle user login and redirect to homepage on success."""
 
-    if CURR_USER_KEY in session:
+    if g.user:
         return redirect(f'/users/{session[CURR_USER_KEY]}')
 
     form = LoginForm()
