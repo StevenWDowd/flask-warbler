@@ -65,8 +65,10 @@ def signup():
     If the there already is a user with that username: flash message
     and re-present form.
     """
+    if CURR_USER_KEY in session:
+        return redirect(f'/users/{session[CURR_USER_KEY]}')
 
-    do_logout()
+    do_logout() #TODO: think about this functionality,
 
     form = UserAddForm()
 
@@ -89,12 +91,16 @@ def signup():
         return redirect("/")
 
     else:
+
         return render_template('users/signup.html', form=form)
 
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
     """Handle user login and redirect to homepage on success."""
+
+    if CURR_USER_KEY in session:
+        return redirect(f'/users/{session[CURR_USER_KEY]}')
 
     form = LoginForm()
 
@@ -128,9 +134,6 @@ def logout():
 
     else:
         raise Unauthorized()
-
-    # IMPLEMENT THIS AND FIX BUG
-    # DO NOT CHANGE METHOD ON ROUTE
 
 
 ##############################################################################
