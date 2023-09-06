@@ -48,3 +48,6 @@ class LoginForm(FlaskForm):
 
 class CSRFForm(FlaskForm):
     """Empty form for CSRF verification"""
+
+class EditUserForm(UserAddForm):
+    """Edit user information"""
