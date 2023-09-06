@@ -40,7 +40,7 @@ def add_user_to_g():
     else:
         g.user = None
 
-
+#TODO: add before-request func to generate csrf form in g
 def do_login(user):
     """Log in user."""
 
@@ -181,6 +181,7 @@ def show_following(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    #TODO: use g.user below
     user = User.query.get_or_404(user_id)
     return render_template('users/following.html', user=user)
 
@@ -193,6 +194,7 @@ def show_followers(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    #TODO: use g.user below
     user = User.query.get_or_404(user_id)
     return render_template('users/followers.html', user=user)
 
@@ -208,9 +210,12 @@ def start_following(follow_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get_or_404(follow_id)
-    g.user.following.append(followed_user)
-    db.session.commit()
+    form = g.csrf_form
+    if form.validate_on_submit():
+        followed_user = User.query.get_or_404(follow_id)
+        g.user.following.append(followed_user)
+        db.session.commit()
+    #TODO: match with pattern in stop_following
 
     return redirect(f"/users/{g.user.id}/following")
 
@@ -221,14 +226,17 @@ def stop_following(follow_id):
 
     Redirect to following page for the current for the current user.
     """
+    form = g.csrf_form
 
-    if not g.user:
+    if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
+
 
     followed_user = User.query.get_or_404(follow_id)
     g.user.following.remove(followed_user)
     db.session.commit()
+
 
     return redirect(f"/users/{g.user.id}/following")
 
@@ -253,6 +261,7 @@ def profile():
     if form.validate_on_submit():
         password = form.password.data
         auth_user = User.authenticate(user.username, password)
+        #TODO: palce this in if block depending on password authentication
         user.username = form.username.data
         user.email = form.email.data
         user.image_url = form.image_url.data
@@ -265,6 +274,7 @@ def profile():
             return redirect(f'/users/{g.user.id}')
 
         else:
+            #TODO: change flashed message
             flash("Invalid login credentials.")
             # session["form"] = form
             # return redirect('/users/profile')
@@ -290,10 +300,13 @@ def delete_user():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    do_logout()
+    form = g.csrf_form
+    if form.validate_on_submit():
+        print("!!!!!!!!!!!!!!!!FORM VALIDATED!!!!!!!!!!!!!!!!!!!")
+        do_logout()
 
-    db.session.delete(g.user)
-    db.session.commit()
+        db.session.delete(g.user)
+        db.session.commit()
 
     return redirect("/signup")
 
@@ -343,10 +356,12 @@ def delete_message(message_id):
     Check that this message was written by the current user.
     Redirect to user page on success.
     """
+    form = g.csrf_form
 
-    if not g.user:
+    if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
+
 
     msg = Message.query.get_or_404(message_id)
     db.session.delete(msg)
@@ -368,8 +383,11 @@ def homepage():
     """
 
     if g.user:
+        user= g.user
+        following_ids = [followed.id for followed in user.following]
         messages = (Message
                     .query
+                    .filter((Message.user_id == user.id) | (Message.user_id.in_(following_ids)))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())

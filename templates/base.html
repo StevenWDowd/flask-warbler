@@ -59,7 +59,7 @@
         <li>
         <form method="POST" action="/logout">
           {{ g.csrf_form.hidden_tag() }}
-          <input type="submit" value="Log out">
+          <button class="btn btn-primary">Log Out</button>
         </form>
        </li>
       {% endif %}
