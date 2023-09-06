@@ -246,6 +246,10 @@ def profile():
     form = EditUserForm(obj=user)
     #form.password.data = "" #TODO: think about this
 
+    # save_form = session.get(form)
+    # if save_form:
+    #     form = save_form
+
     if form.validate_on_submit():
         password = form.password.data
         auth_user = User.authenticate(user.username, password)
@@ -262,12 +266,11 @@ def profile():
 
         else:
             flash("Invalid login credentials.")
-            #db.session.rollback()
-            form = EditUserForm(obj=user)
-            return redirect('/users/profile')
+            # session["form"] = form
+            # return redirect('/users/profile')
 
-    else:
-        return render_template("users/edit.html", form=form)
+
+    return render_template("users/edit.html", form=form)
 
 
 
