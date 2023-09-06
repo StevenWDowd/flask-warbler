@@ -51,3 +51,11 @@ class CSRFForm(FlaskForm):
 
 class EditUserForm(UserAddForm):
     """Edit user information"""
+    header_image_url = StringField(
+        '(Optional) Header image URL',
+            validators=[Optional(), URL(), Length(max=255)])
+
+    bio = TextAreaField("User Bio", validators=[Optional()])
+
+    location = StringField("Your Location",
+                           validators=[Length(max=30), Optional()])

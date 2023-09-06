@@ -241,24 +241,34 @@ def profile():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    user = User.query.get_or_404(g.user.id)
+    user = g.user
 
     form = EditUserForm(obj=user)
-    form.password.data = "" #TODO: think about this
+    #form.password.data = "" #TODO: think about this
 
     if form.validate_on_submit():
-        auth_user = User.authenticate(user.username, user.password)
-
-        if auth_user:
-
+        password = form.password.data
+        auth_user = User.authenticate(user.username, password)
         user.username = form.username.data
         user.email = form.email.data
         user.image_url = form.image_url.data
         user.header_image_url = form.header_image_url.data
         user.bio = form.bio.data
-        password = form.password.data
+        user.location=form.location.data
 
-        db.session.commit()
+        if auth_user:
+            db.session.commit()
+            return redirect(f'/users/{g.user.id}')
+
+        else:
+            flash("Invalid login credentials.")
+            #db.session.rollback()
+            form = EditUserForm(obj=user)
+            return redirect('/users/profile')
+
+    else:
+        return render_template("users/edit.html", form=form)
+
 
 
 
