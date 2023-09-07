@@ -296,6 +296,12 @@ def delete_user():
 
     return redirect("/signup")
 
+@app.get("/users/<int:user_id>/likes")
+def show_likes():
+    ...
+
+    return render_template("users/likes.html")
+
 
 ##############################################################################
 # Messages routes:
@@ -354,6 +360,19 @@ def delete_message(message_id):
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}")
+
+###############################################################################
+# Like and Unlike routes
+
+@app.post("/like")
+def like_message():
+    ...
+    return redirect(f"/user{g.user.id}/likes")
+
+@app.post("/unlike")
+def unlike_message():
+    ...
+    return redirect(f"/user{g.user.id}/likes")
 
 
 ##############################################################################
