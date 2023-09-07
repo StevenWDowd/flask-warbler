@@ -42,6 +42,7 @@ def add_user_to_g():
 @app.before_request
 def add_csrf_to_g():
     """Add csrf to Flask global"""
+    
     g.csrf_form = CSRFForm()
 
 
@@ -180,7 +181,7 @@ def show_user(user_id):
 @app.get('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
-    #user = g.user
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -192,7 +193,6 @@ def show_following(user_id):
 @app.get('/users/<int:user_id>/followers')
 def show_followers(user_id):
     """Show list of followers of this user."""
-    #user = g.user
 
     if not g.user:
         flash("Access unauthorized.", "danger")

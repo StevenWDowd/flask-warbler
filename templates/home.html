@@ -57,16 +57,22 @@
               <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
               <p>{{ msg.text }}</p>
 
-              {% if msg in g.user.likes %}
-              <form class="unlike-form" method="POST" action="/unlike/{{ msg.id }}">
-                {{ g.csrf_form.hidden_tag() }}
-              <button class="unlike-button btn btn-primary btn-sm"><i class="bi bi-star-fill">Unlike</i></button>
-              </form>
-              {% else %}
-              <form class="like-form" method="POST" action="/like/{{ msg.id }}">
-                {{ g.csrf_form.hidden_tag() }}
-              <button class="like-button btn btn-outline-primary btn-sm"><i class="bi bi-star"></i>Like</button>
-              </form>
+              {% if msg.user.id != g.user.id %}
+                {% if msg in g.user.likes %}
+                <form class="unlike-form" method="POST" action="/unlike/{{ msg.id }}">
+                  {{ g.csrf_form.hidden_tag() }}
+                  <button class="unlike-button btn btn-primary btn-sm">
+                    <i class="bi bi-star-fill"></i>
+                    Unlike</button>
+                </form>
+                {% else %}
+                <form class="like-form" method="POST" action="/like/{{ msg.id }}">
+                  {{ g.csrf_form.hidden_tag() }}
+                  <button class="like-button btn btn-outline-primary btn-sm">
+                    <i class="bi bi-star"></i>
+                    Like</button>
+                </form>
+                {% endif %}
               {% endif %}
             </div>
           </li>
