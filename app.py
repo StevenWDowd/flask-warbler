@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import Unauthorized
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFForm, EditUserForm
-from models import db, connect_db, User, Message, Like
+from models import db, connect_db, User, Message
 
 load_dotenv()
 
@@ -42,7 +42,7 @@ def add_user_to_g():
 @app.before_request
 def add_csrf_to_g():
     """Add csrf to Flask global"""
-    
+
     g.csrf_form = CSRFForm()
 
 
@@ -303,9 +303,7 @@ def show_likes(user_id):
 
     user = User.query.get(user_id)
 
-    liked_messages = user.likes
-
-    return render_template("users/likes.html", liked_messages=liked_messages,
+    return render_template("users/likes.html",
                            user=user)
 
 
@@ -380,12 +378,12 @@ def like_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    like = Like(user_id = g.user.id, message_id = message_id)
+    message = Message.query.get_or_404(message_id)
+    g.user.messages_liked.append(message)
 
-    db.session.add(like)
     db.session.commit()
 
-    curr_url = request.referrer
+    curr_url = request.referrer or "/"
 
     return redirect(curr_url)
 
@@ -399,8 +397,9 @@ def unlike_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    like = Like.query.get((g.user.id, message_id))
-    db.session.delete(like)
+    message = Message.query.get_or_404(message_id)
+    g.user.messages_liked.remove(message)
+
     db.session.commit()
 
     curr_url = request.referrer

@@ -59,7 +59,7 @@
               <p>{{ msg.text }}</p>
 
               {% if msg.user.id != g.user.id %}
-                {% if msg in g.user.likes %}
+                {% if msg in g.user.messages_liked %}
                 <form class="unlike-form" method="POST"
                   action="/unlike/{{ msg.id }}">
                   {{ g.csrf_form.hidden_tag() }}

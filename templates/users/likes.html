@@ -16,7 +16,7 @@
             {{ msg.timestamp.strftime('%d %B %Y') }}</span>
           <p>{{ msg.text }}</p>
 
-          {% if msg in g.user.likes %}
+          {% if msg in g.user.messages_liked %}
           <form class="unlike-form" method="POST" action="/unlike/{{ msg.id }}">
             {{ g.csrf_form.hidden_tag() }}
           <button class="unlike-button btn btn-primary btn-sm">

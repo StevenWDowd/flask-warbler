@@ -48,7 +48,7 @@
               {{ message.timestamp.strftime('%d %B %Y') }}
             </span>
           {% if message.user.id != g.user.id %}
-            {% if message in g.user.likes %}
+            {% if message in g.user.messages_liked %}
               <form class="unlike-form" method="POST"
                 action="/unlike/{{ message.id }}">
               {{ g.csrf_form.hidden_tag() }}
