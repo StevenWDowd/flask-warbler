@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import Unauthorized
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFForm, EditUserForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Like
 
 load_dotenv()
 
@@ -364,12 +364,24 @@ def delete_message(message_id):
 ###############################################################################
 # Like and Unlike routes
 
-@app.post("/like")
-def like_message():
-    ...
+@app.post("/like/<int:message_id>")
+def like_message(message_id):
+    """ Like a message. """
+
+    form = g.csrf_form
+
+    if not g.user or not form.validate_on_submit():
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    like = Like(user_id = g.user, message_id = message_id)
+
+    db.session.add(like)
+    db.session.commit()
+
     return redirect(f"/user{g.user.id}/likes")
 
-@app.post("/unlike")
+@app.post("/unlike/<int:message_id>")
 def unlike_message():
     ...
     return redirect(f"/user{g.user.id}/likes")
