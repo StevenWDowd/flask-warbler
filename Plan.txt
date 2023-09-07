@@ -1,0 +1,19 @@
+A.Create a Likes models
+    relationships:
+        1. user_id
+        2. message_id
+        3. own id?
+
+User -> Message -> Likes
+
+
+B. Add routes (post functionality)
+-involve redirection or template renderings
+-render the page with a filled in star?
+
+C. Add "like" icon to templates
+
+
+Questions
+1. do we need to able to access all the users who have liked the message?
+2.
