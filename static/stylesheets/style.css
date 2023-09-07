@@ -533,9 +533,14 @@ p.card-bio {
   letter-spacing: 0.01em;
   margin-bottom: 10px;
 }
-
-.unlike_button {
-  background-color: #1da1f2;
+/* ============================== like and unlike buttons*/
+.unlike-button {
+  position: relative;
+  z-index: 2;
+}
+.like-button {
+  position: relative;
+  z-index: 2;
 }
 
 /* ================================ 404 page */
