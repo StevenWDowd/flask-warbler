@@ -45,7 +45,6 @@ def add_csrf_to_g():
     g.csrf_form = CSRFForm()
 
 
-
 def do_login(user):
     """Log in user."""
 
@@ -384,7 +383,10 @@ def like_message(message_id):
     db.session.add(like)
     db.session.commit()
 
-    return redirect(f"/users/{g.user.id}/likes")
+    curr_url = request.referrer
+
+    #return redirect(f"/users/{g.user.id}/likes")
+    return redirect(curr_url)
 
 @app.post("/unlike/<int:message_id>")
 def unlike_message(message_id):
@@ -398,7 +400,10 @@ def unlike_message(message_id):
     db.session.delete(like)
     db.session.commit()
 
-    return redirect(f"/users/{g.user.id}/likes")
+    curr_url = request.referrer
+    return redirect(curr_url)
+
+    #return redirect(f"/users/{g.user.id}/likes")
 
 
 ##############################################################################

@@ -16,7 +16,7 @@
           <p>{{ msg.text }}</p>
 
           {% if msg in g.user.likes %}
-          <form class="unlike-form" method="POST" action="/like/{{ msg.id }}">
+          <form class="unlike-form" method="POST" action="/unlike/{{ msg.id }}">
             {{ g.csrf_form.hidden_tag() }}
           <button class="unlike-button btn btn-primary btn-sm"><i class="bi bi-star-fill">Unlike</i></button>
           </form>
