@@ -35,12 +35,17 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-        g.csrf_form = CSRFForm()
 
     else:
         g.user = None
 
-#TODO: add before-request func to generate csrf form in g
+@app.before_request
+def add_csrf_to_g():
+    """Add csrf to Flask global"""
+    g.csrf_form = CSRFForm()
+
+
+
 def do_login(user):
     """Log in user."""
 
@@ -68,7 +73,7 @@ def signup():
     if g.user:
         return redirect(f'/users/{session[CURR_USER_KEY]}')
 
-    do_logout() #TODO: think about this functionality,
+    do_logout()
 
     form = UserAddForm()
 
@@ -176,26 +181,23 @@ def show_user(user_id):
 @app.get('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
-
+    user = g.user
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    #TODO: use g.user below
-    user = User.query.get_or_404(user_id)
     return render_template('users/following.html', user=user)
 
 
 @app.get('/users/<int:user_id>/followers')
 def show_followers(user_id):
     """Show list of followers of this user."""
+    user = g.user
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    #TODO: use g.user below
-    user = User.query.get_or_404(user_id)
     return render_template('users/followers.html', user=user)
 
 
@@ -206,16 +208,15 @@ def start_following(follow_id):
     Redirect to following page for the current for the current user.
     """
 
-    if not g.user:
+    form = g.csrf_form
+
+    if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = g.csrf_form
-    if form.validate_on_submit():
-        followed_user = User.query.get_or_404(follow_id)
-        g.user.following.append(followed_user)
-        db.session.commit()
-    #TODO: match with pattern in stop_following
+    followed_user = User.query.get_or_404(follow_id)
+    g.user.following.append(followed_user)
+    db.session.commit()
 
     return redirect(f"/users/{g.user.id}/following")
 
@@ -252,41 +253,26 @@ def profile():
     user = g.user
 
     form = EditUserForm(obj=user)
-    #form.password.data = "" #TODO: think about this
-
-    # save_form = session.get(form)
-    # if save_form:
-    #     form = save_form
 
     if form.validate_on_submit():
         password = form.password.data
         auth_user = User.authenticate(user.username, password)
-        #TODO: palce this in if block depending on password authentication
-        user.username = form.username.data
-        user.email = form.email.data
-        user.image_url = form.image_url.data
-        user.header_image_url = form.header_image_url.data
-        user.bio = form.bio.data
-        user.location=form.location.data
 
         if auth_user:
+            user.username = form.username.data
+            user.email = form.email.data
+            user.image_url = form.image_url.data
+            user.header_image_url = form.header_image_url.data
+            user.bio = form.bio.data
+            user.location=form.location.data
             db.session.commit()
             return redirect(f'/users/{g.user.id}')
 
         else:
-            #TODO: change flashed message
-            flash("Invalid login credentials.")
-            # session["form"] = form
-            # return redirect('/users/profile')
-
+            flash("Invalid password")
 
     return render_template("users/edit.html", form=form)
 
-
-
-
-    #Get-form with current values
-    #Post- getting info from form, sending updates to db,
 
 
 @app.post('/users/delete')
@@ -387,7 +373,10 @@ def homepage():
         following_ids = [followed.id for followed in user.following]
         messages = (Message
                     .query
-                    .filter((Message.user_id == user.id) | (Message.user_id.in_(following_ids)))
+                    .filter(
+                        (Message.user_id == user.id) |
+                        (Message.user_id.in_(following_ids))
+                    )
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
