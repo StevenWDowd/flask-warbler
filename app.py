@@ -181,23 +181,25 @@ def show_user(user_id):
 @app.get('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
-    user = g.user
+    #user = g.user
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    user = User.query.get_or_404(user_id)
     return render_template('users/following.html', user=user)
 
 
 @app.get('/users/<int:user_id>/followers')
 def show_followers(user_id):
     """Show list of followers of this user."""
-    user = g.user
+    #user = g.user
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    user = User.query.get_or_404(user_id)
     return render_template('users/followers.html', user=user)
 
 
@@ -297,10 +299,13 @@ def delete_user():
     return redirect("/signup")
 
 @app.get("/users/<int:user_id>/likes")
-def show_likes():
-    ...
+def show_likes(user_id):
+    user = User.query.get(user_id)
 
-    return render_template("users/likes.html")
+    liked_messages = user.likes
+
+    return render_template("users/likes.html", liked_messages=liked_messages,
+                           user=user)
 
 
 ##############################################################################
@@ -374,17 +379,26 @@ def like_message(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    like = Like(user_id = g.user, message_id = message_id)
+    like = Like(user_id = g.user.id, message_id = message_id)
 
     db.session.add(like)
     db.session.commit()
 
-    return redirect(f"/user{g.user.id}/likes")
+    return redirect(f"/users/{g.user.id}/likes")
 
 @app.post("/unlike/<int:message_id>")
-def unlike_message():
-    ...
-    return redirect(f"/user{g.user.id}/likes")
+def unlike_message(message_id):
+    form = g.csrf_form
+
+    if not g.user or not form.validate_on_submit():
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    like = Like.query.get((g.user.id, message_id))
+    db.session.delete(like)
+    db.session.commit()
+
+    return redirect(f"/users/{g.user.id}/likes")
 
 
 ##############################################################################

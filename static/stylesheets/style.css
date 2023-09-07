@@ -534,6 +534,10 @@ p.card-bio {
   margin-bottom: 10px;
 }
 
+.unlike_button {
+  background-color: #1da1f2;
+}
+
 /* ================================ 404 page */
 
 .message-404 {
@@ -552,4 +556,8 @@ p.card-bio {
 
 .message-404 input {
   flex: 1;
+}
+
+.shortcut {
+  background: url("/static/favicon.ico");
 }
