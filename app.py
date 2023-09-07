@@ -299,6 +299,8 @@ def delete_user():
 
 @app.get("/users/<int:user_id>/likes")
 def show_likes(user_id):
+    """ Show all user liked messages"""
+
     user = User.query.get(user_id)
 
     liked_messages = user.likes
@@ -385,11 +387,12 @@ def like_message(message_id):
 
     curr_url = request.referrer
 
-    #return redirect(f"/users/{g.user.id}/likes")
     return redirect(curr_url)
 
 @app.post("/unlike/<int:message_id>")
 def unlike_message(message_id):
+    """Unlike a message"""
+
     form = g.csrf_form
 
     if not g.user or not form.validate_on_submit():
@@ -403,7 +406,6 @@ def unlike_message(message_id):
     curr_url = request.referrer
     return redirect(curr_url)
 
-    #return redirect(f"/users/{g.user.id}/likes")
 
 
 ##############################################################################
