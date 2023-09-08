@@ -7,7 +7,7 @@
 
 import os
 from unittest import TestCase
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DatabaseError
 from psycopg2.errors import UniqueViolation
 
 from models import db, User, Message, Follow
@@ -60,6 +60,8 @@ class UserModelTestCase(TestCase):
         self.assertEqual(len(u1.followers), 0)
 
     def test_is_followed_by(self):
+        """Tests for a user being followed"""
+
         u1 = User.query.get(self.u1_id)
         u2 = User.query.get(self.u2_id)
         u2.following.append(u1)
@@ -67,6 +69,8 @@ class UserModelTestCase(TestCase):
         self.assertEqual(u2.is_followed_by(u1), False)
 
     def test_is_following(self):
+        """Tests for a user following another user"""
+
         u1 = User.query.get(self.u1_id)
         u2 = User.query.get(self.u2_id)
         u2.following.append(u1)
@@ -74,8 +78,19 @@ class UserModelTestCase(TestCase):
         self.assertEqual(u2.is_following(u1), True)
 
     def test_user_signup(self):
+        """Tests signup function correctly handles new users,
+        duplication errors, and missing user data.
+
+        """
         u3 = User.signup("u3", "u3@email.com", "password", None)
-        u4 = User.signup("u4", "u3@email.com", "password", None)
         self.assertIsInstance(u3, User)
         with self.assertRaises(IntegrityError):
-            u4 = User.signup("u4", "u3@email.com", "password", None)
+            User.signup("u4", "u1@email.com", "password", None)
+            db.session.commit()
+
+
+    def test_user_authenticate(self):
+
+        self.assertIsInstance(User.authenticate("u1", "password"), User)
+        self.assertEqual(User.authenticate("u4", "password"), False)
+        self.assertEqual(User.authenticate("u1", "12345678"), False)

@@ -290,7 +290,7 @@ def delete_user():
 
     form = g.csrf_form
     if form.validate_on_submit():
-        print("!!!!!!!!!!!!!!!!FORM VALIDATED!!!!!!!!!!!!!!!!!!!")
+
         do_logout()
 
         db.session.delete(g.user)
