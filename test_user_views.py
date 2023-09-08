@@ -156,7 +156,39 @@ class UserViewTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn("Username already taken", html)
 
+    def test_login_fails(self):
+        """Test user who logs in with invalid password fails"""
 
+        with self.client as c:
+            resp = c.post("/login", data={"username": "u1",
+                                          "password": "1234567"},
+                                          follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Invalid credentials.", html)
+
+    def test_login_succeeds(self):
+        """Test a user successful login"""
+        with self.client as c:
+            resp = c.post("/login", data={"username": "u1",
+                                          "password": "password"},
+                                          follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Hello, u1!", html)
+
+    def test_login_get(self):
+        """Tests login page loads"""
+
+        with self.client as c:
+            resp = c.get("/login")
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Welcome back.", html)
+
+    def test_successful_logout
 
 
 
