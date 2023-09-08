@@ -20,6 +20,7 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
+app.config['FLASK_DEBUG']=False
 
 connect_db(app)
 
@@ -379,7 +380,8 @@ def like_message(message_id):
         return redirect("/")
 
     message = Message.query.get_or_404(message_id)
-    g.user.messages_liked.append(message)
+    if message.user_id != g.user.id:
+        g.user.messages_liked.append(message)
 
     db.session.commit()
 

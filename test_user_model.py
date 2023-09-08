@@ -7,6 +7,8 @@
 
 import os
 from unittest import TestCase
+from sqlalchemy.exc import IntegrityError
+from psycopg2.errors import UniqueViolation
 
 from models import db, User, Message, Follow
 
@@ -20,6 +22,11 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
 # Now we can import app
 
 from app import app
+
+app.config['TESTING'] = True
+
+app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
+
 
 # Create our tables (we do this here, so we only create the tables
 # once for all tests --- in each test, we'll delete the data
@@ -51,3 +58,24 @@ class UserModelTestCase(TestCase):
         # User should have no messages & no followers
         self.assertEqual(len(u1.messages), 0)
         self.assertEqual(len(u1.followers), 0)
+
+    def test_is_followed_by(self):
+        u1 = User.query.get(self.u1_id)
+        u2 = User.query.get(self.u2_id)
+        u2.following.append(u1)
+        self.assertEqual(u1.is_followed_by(u2), True)
+        self.assertEqual(u2.is_followed_by(u1), False)
+
+    def test_is_following(self):
+        u1 = User.query.get(self.u1_id)
+        u2 = User.query.get(self.u2_id)
+        u2.following.append(u1)
+        self.assertEqual(u1.is_following(u2), False)
+        self.assertEqual(u2.is_following(u1), True)
+
+    def test_user_signup(self):
+        u3 = User.signup("u3", "u3@email.com", "password", None)
+        u4 = User.signup("u4", "u3@email.com", "password", None)
+        self.assertIsInstance(u3, User)
+        with self.assertRaises(IntegrityError):
+            u4 = User.signup("u4", "u3@email.com", "password", None)
