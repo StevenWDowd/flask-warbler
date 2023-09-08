@@ -7,6 +7,7 @@ from unittest import TestCase
 from sqlalchemy.exc import IntegrityError, DatabaseError
 
 from models import db, User, Message, Follow
+from forms import CSRFForm
 
 
 
@@ -78,16 +79,37 @@ class UserViewTestCase(TestCase):
         db.session.rollback()
 
     def test_add_user_to_g_logged_out(self):
+        """Test a logged out user is removed from g"""
+
         with self.client as c:
             resp = c.get("/")
             self.assertEqual(g.user, None)
 
     def test_add_user_to_g_logged_in(self):
-        session[CURR_USER_KEY] = self.u1_id
+        """Tests g.user is the logged in user"""
+
         u1 = User.query.get(self.u1_id)
+
+        with self.client.session_transaction() as session:
+            session[CURR_USER_KEY] = self.u1_id
 
         with self.client as c:
             resp = c.get("/")
             self.assertEqual(g.user, u1)
+
+    def test_csrf_from_in_g(self):
+        """Tests csrf form is added to g"""
+
+        with self.client as c:
+            resp = c.get("/")
+            self.assertIsInstance(g.csrf_form, CSRFForm)
+
+    def test_user_is_logged_in(self):
+        
+
+
+
+
+
 
 
