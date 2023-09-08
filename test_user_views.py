@@ -104,8 +104,59 @@ class UserViewTestCase(TestCase):
             resp = c.get("/")
             self.assertIsInstance(g.csrf_form, CSRFForm)
 
-    def test_user_is_logged_in(self):
-        
+    # def test_do_login(user="random_id"):
+    #     """Test the do_login helper function."""
+    #     with self.client.session_transaction() as session:
+
+    #         assertEqual(session[CURR_USER_KEY], "random_id")
+
+    def test_signup_get_logged_out(self):
+        """Test signup route when logged out."""
+
+        with self.client as c:
+            resp = c.get("/signup")
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Sign me up!", html)
+
+    def test_signup_get_logged_in(self):
+        """Test signup route when logged in."""
+
+        u1 = User.query.get(self.u1_id)
+
+        with self.client.session_transaction() as session:
+            session[CURR_USER_KEY] = self.u1_id
+
+        with self.client as c:
+            resp = c.get("/signup", follow_redirects=True)
+            html = resp.get_data(as_text = True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Edit Profile", html)
+
+    def test_signup_post(self):
+        """Test submitting a form to the signup route."""
+        with self.client as c:
+            resp = c.post("/signup", data={"username":"user3",
+                                           "email":"user3@email.com",
+                                           "password": "password"},
+                                           follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("user3", html)
+
+    def test_signup_post_taken_username(self):
+        """Test submitting a signup form with a username that has
+        been taken already."""
+        with self.client as c:
+            resp = c.post("/signup", data={"username":"u1",
+                                           "email":"user3@email.com",
+                                           "password": "password"},
+                                           follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Username already taken", html)
+
+
 
 
 
