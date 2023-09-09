@@ -51,6 +51,7 @@ class UserViewTestCase(TestCase):
         u1 = User.signup("u1", "u1@email.com", "password", None)
         u2 = User.signup("u2", "u2@email.com", "password", None)
         u3 = User.signup("u3", "u3@email.com", "password", None)
+        u1.location = "Buffalo, NY"
 
         msg1 = Message(text="test text 1")
         u1.messages.append(msg1)
@@ -188,7 +189,90 @@ class UserViewTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn("Welcome back.", html)
 
-    def test_successful_logout
+    def test_successful_logout(self):
+        """Tests a successful logout"""
+
+        with self.client.session_transaction() as session:
+            session[CURR_USER_KEY] = self.u1_id
+
+        with self.client as c:
+            resp = c.post("/logout", data={}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Successfully logged out", html)
+
+    def test_list_users(self):
+        """Tests showing the list of all users"""
+
+        with self.client.session_transaction() as session:
+            session[CURR_USER_KEY] = self.u1_id
+
+        with self.client as c:
+            resp = c.get("/users")
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("col-lg-4 col-md-6 col-12", html)
+
+    def test_show_user_logged_in(self):
+        """Test the showing of a single user when logged in."""
+
+        with self.client.session_transaction() as session:
+            session[CURR_USER_KEY] = self.u1_id
+
+        with self.client as c:
+            resp = c.get(f"/users/{self.u1_id}")
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Buffalo, NY", html)
+
+    def test_show_following(self):
+        """Test the showing of the users a user is following"""
+        u1 = User.query.get(self.u1_id)
+        u2 = User.query.get(self.u2_id)
+
+        u1.following.append(u2)
+        db.session.commit()
+
+        with self.client.session_transaction() as session:
+            session[CURR_USER_KEY] = self.u1_id
+
+        with self.client as c:
+            resp = c.get(f"/users/{self.u1_id}/following")
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("u2", html)
+
+    def test_show_followers(self):
+        """Test showing of the users who follow a user."""
+        u1 = User.query.get(self.u1_id)
+        u2 = User.query.get(self.u2_id)
+
+        u1.following.append(u2)
+        db.session.commit()
+
+        with self.client.session_transaction() as session:
+            session[CURR_USER_KEY] = self.u1_id
+
+        with self.client as c:
+            resp = c.get(f"/users/{self.u2_id}/followers")
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("u1", html)
+
+    def test_start_following(self):
+        """Test function for a user to begin following another user."""
+
+        with self.client.session_transaction() as session:
+            session[CURR_USER_KEY] = self.u1_id
+
+        with self.client as c:
+            resp = c.post(f"/users/follow/{self.u2_id}")
+
+
+
+
+
+
 
 
 
